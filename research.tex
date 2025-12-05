@@ -70,27 +70,30 @@ POSデータに対してLightGBMモデルに追加学習を施すことで、予
 \section{データについて}
 本研究では以下のデータセットを用いる。
 \begin{enumerate}
-    \item Beverage Sales%
-    \footnote{\url{https://www.kaggle.com/datasets/sebastianwillmann/beverage-sales}}
-    \item Restaurant Sales report%
-    \footnote{\url{https://www.kaggle.com/datasets/rajatsurana979/fast-food-sales-report}}
-    \item Sales of a Supermarket%
-    \footnote{\url{https://www.kaggle.com/datasets/lovishbansal123/sales-of-a-supermarket}}
     \item Walmart Sales%
     \footnote{\url{https://www.kaggle.com/datasets/mikhail1681/walmart-sales}}
+
+    \item Restaurant Sales report%
+    \footnote{\url{https://www.kaggle.com/datasets/rajatsurana979/fast-food-sales-report}}
+    
+    \item Sales of a Supermarket%
+    \footnote{\url{https://www.kaggle.com/datasets/lovishbansal123/sales-of-a-supermarket}}
+    
+    \item {Store Sales Time Series Forecasting%
+    \footnote{\url{https://www.kaggle.com/competitions/store-sales-time-series-forecasting}}}
+
 \end{enumerate}
 
 
 % ==================================================
 \chapter{基礎知識}
 \section{LightGBM}
-LightGBM(Light Gradient Boosting Machine)は、Microsoft Researchによって開発された勾配ブースティング手法に基づく機械学習アルゴリズムである。決定木を基礎モデルとして逐次的に学習を進め、誤差を補正するようにモデルを構築する点は一般的な勾配ブースティングと同様であるが、LightGBMは高速性と高いメモリ効率を重視して最適化されている。
+LightGBM（Light Gradient Boosting Machine）は、Microsoft Researchによって開発された勾配ブースティング手法に基づく機械学習アルゴリズムである。決定木を基礎モデルとして多数組み合わせることで、高い表現力を持つ予測モデルを構築する点に特徴がある。
 
-LightGBMの特徴として、第一にヒストグラムベースの学習方式を採用している点が挙げられる。これは連続値の特徴量をビンと呼ばれる区間に離散化し、その集計結果を用いて分割点を探索する手法である。この方式により、従来手法と比較して大幅な計算効率の向上とメモリ使用量の削減が可能となる。
+まず、本研究で用いるLightGBMは決定木ベースのアルゴリズムであるため、決定木の概要について簡単に述べる。決定木は、入力される特徴量に対して、特定の特徴量があるしきい値以上かどうかなどの条件に基づいてデータを順に分割していき、最終的に葉ノードと呼ばれる末端のノードごとに予測値（回帰問題であれば数値、分類問題であればクラス）が割り当てられるモデルである。根ノードから葉ノードまでの分岐は、人間が理解しやすいif--thenルールの列として表現できるため、予測結果の解釈が比較的容易である。また、特徴量のスケーリングを必要とせず、非線形な関係や特徴量同士の相互作用も表現しやすいという利点がある。
 
-第二に、LightGBMはleaf-wise成長戦略を採用している。これにより少ない分割回数で高精度を得やすいという利点がある。ただし、分割が偏りすぎると過学習が生じる可能性があるため、最大深さの制約などが併用される。
+LightGBMは、この決定木を多数逐次的に学習し、それぞれが前のモデルの誤差を補正するように重ね合わせることで、最終的な予測性能を高める勾配ブースティング決定木の一実装である。その中でも、特に高速な学習とメモリ効率の良さ、大規模データセットへの適用のしやすさを重視して設計されている。
 
-また、カテゴリ変数の処理や欠損値処理に対しても柔軟性が高く、大規模データセットに対しても高速に学習できることから、実務領域や競技的な予測タスクにおいて広く利用されている。
 
 \section{Early Stopping}
 
@@ -420,8 +423,17 @@ Walmart Sales Dataset & 2012-09-01 & 2012-09-30 \\
   \item 目的関数：\texttt{objective = "regression"}（回帰タスク）
 \end{itemize}
 
+\section{Time Cross Validationにおけるデータの分割方法}
+まず表\ref{val-periods}に示した検証期間を固定し、その期間より前の全データを訓練データ候補とする。すなわち、検証期間は常に時系列の末尾側に配置され、訓練データはその直前までの履歴データのみから構成される。
 
+訓練データ候補に対しては、日付を表す列（\texttt{date}）を用いて昇順にソートしたうえで、Time Cross Validationの各分割を構成する。ここで、全訓練サンプル数を$N$とし、$k$番目の分割（$k=1,\dots,10$）における訓練データサイズ$N_k$を、式\ref{eq:tcv_split}のように定める。
 
+\begin{equation}
+  N_k = \left\lceil \frac{k}{10} N \right\rceil
+  \label{eq:tcv_split}
+\end{equation}
+
+訓練データのうち先頭から$N_k$件を用いてモデルを学習し、表\ref{val-periods}で定めた検証期間のデータを検証データとして評価する。$k$を1から10まで変化させることで、全訓練期間の$1/10,2/10,\dots,10/10$を順に用いるTime Cross Validationとなる。
 
 \section{評価指標}
 各手法で得られたMAEを比較することで、提案手法が
@@ -498,7 +510,7 @@ POSデータでは、店舗や商品カテゴリごとに売上の水準や変�
 Walmart Sales DatasetやStore Sales Time Series Forecastingにおいて、
 ベースラインと比べて顕著なMAEの改善が見られたと解釈できる。
 
-また、Time Cross Validation は時系列の順序を保った評価方法であり、
+また、Time Cross Validationは時系列の順序を保った評価方法であり、
 汎化性能を厳密に測るうえで有用である一方で、
 各分割で利用可能な訓練データが限定されるという性質をもつ。
 したがって、十分なデータ量を用いて学習できるベースラインや提案手法と比べると、
