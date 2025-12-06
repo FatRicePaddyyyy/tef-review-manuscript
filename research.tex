@@ -35,11 +35,11 @@
 \chapter{はじめに}
 \section{研究背景}
 近年、小売業や飲食業をはじめとする多様な産業で、
-POS（Point of Sale）およびそれに拡張されたID-POSデータにもとづく需要予測に注目が集まっている。
+POS（Point of Sale）およびそれを拡張したID-POSデータにもとづく需要予測が注目されている。
 経済産業省の委託事業報告書では、ID-POSを活用した需要予測により
 小売業の発注精度を向上させる実証実験が行われており、
 発注精度の向上を通じてサプライチェーンの効率化や
-過剰在庫・食品ロスの削減につなげることが検討されている\footnote{\url{https://www.meti.go.jp/meti_lib/report/2023FY/000108.pdf}}。
+過剰在庫・食品ロスの削減につなげることが検討されている\footnote{\url{https://www.meti.go.jp/meti_lib/report/2023FY/000108.pdf}（参照 2025-12-5）}。
 こうした流れのなかで、高い予測精度と計算効率を兼ね備える機械学習手法の1つである
 LightGBM\cite{ke2017lightgbm}が広く利用されている。
 
@@ -72,16 +72,16 @@ POSデータに対してLightGBMモデルに追加学習を施すことで、予
 本研究では以下のデータセットを用いる。
 \begin{enumerate}
     \item Walmart Sales%
-    \footnote{\url{https://www.kaggle.com/datasets/mikhail1681/walmart-sales}}
+    \footnote{\url{https://www.kaggle.com/datasets/mikhail1681/walmart-sales} \\ (参照 2025-12-5)}
 
     \item Restaurant Sales report%
-    \footnote{\url{https://www.kaggle.com/datasets/rajatsurana979/fast-food-sales-report}}
+    \footnote{\url{https://www.kaggle.com/datasets/rajatsurana979/fast-food-sales-report}\\(参照 2025-12-5)}
     
     \item Sales of a Supermarket%
-    \footnote{\url{https://www.kaggle.com/datasets/lovishbansal123/sales-of-a-supermarket}}
+    \footnote{\url{https://www.kaggle.com/datasets/lovishbansal123/sales-of-a-supermarket}\\(参照 2025-12-5)}
     
     \item {Store Sales Time Series Forecasting%
-    \footnote{\url{https://www.kaggle.com/competitions/store-sales-time-series-forecasting}}}
+    \footnote{\url{https://www.kaggle.com/competitions/store-sales-time-series-forecasting}\\(参照 2025-12-5)}}
 
 \end{enumerate}
 
@@ -112,7 +112,7 @@ Early Stoppingでは、訓練データとは別に検証データを用意し、
 \begin{itemize}
   \item 過学習が始まる前のタイミングで学習を停止できるため、汎化性能の低下を抑制できる
   \item 学習回数を自動的に調整できるため、不要なイテレーションを避け、計算時間を削減できる
-  \item ハイパーパラメーターとして学習回数を過度に大きく設定しても、
+  \item ハイパーパラメータとして学習回数を過度に大きく設定しても、
         Early Stoppingによって実際の有効な学習回数が自動的に制御される
 \end{itemize}
 
@@ -177,8 +177,6 @@ POSデータにおける売上金額や販売数量の予測では、
 
 
 \chapter{関連研究}
-\section{LightGBMを用いたファインチューニングによる予測モデル}
-
 Yeら\cite{ye2023_pv_finetune}は、太陽光発電プラントにおける出力予測を対象として、
 LightGBMとXGBoostを組み合わせた事前学習・ファインチューニング型の予測モデルを提案している。
 具体的には、まず複数プラントから得られた気象データを用いて大規模な学習データセットを構成し、
@@ -186,25 +184,12 @@ LightGBMおよびXGBoostによるハイブリッドモデルを事前学習す�
 その後、新たな発電所や環境条件に対応するために、各プラント固有のデータに対して
 ファインチューニングを行うことで、出力予測精度と汎化性能の向上を図っている。
 実験の結果、提案モデルは従来手法と比較して、
-複数地点を同時に予測する設定においても一貫して低い誤差を達成することが報告されている\cite{ye2023_pv_finetune}。
-
-このように、勾配ブースティング系モデルに対して事前学習とファインチューニングの枠組みを導入することで、
-新たに得られたデータや別環境のデータに適応させる手法が提案されている。
-一方で、本研究が対象とするのは太陽光発電ではなくPOSデータであり、
-新規データが逐次到着する状況を前提とするのではなく、
-既存の履歴データに対して追加学習を施すことでモデルの予測精度を高める点に特徴がある。
-さらに、本研究ではLightGBM単独のモデルをベースとし、
-カテゴリカルカラムによるデータ分割とカテゴリ別ファインチューニングを組み合わせることで、
-カテゴリごとの局所的な挙動を補正する手法を検討している。
-すなわち、Yeらの研究が
-「新しいプラントや条件への適応」を主な目的としているのに対し、
-本研究は「既存データを用いたモデル再学習による精度向上」に焦点を当てている点で
-問題設定およびアプローチが異なる。
+複数地点を同時に予測する設定においても一貫して低い誤差を達成した\cite{ye2023_pv_finetune}。
 
 % ========================================================================================
 \chapter{提案手法}
 \section{提案手法の内容}
-本研究では、LightGBMによって学習したベースモデルに対し、カテゴリカルカラムごとにファインチューニングを行うことで予測精度を向上させる手法を提案する。手順を以下に示す。
+本研究では、LightGBMによって学習したベースモデルに対し、カテゴリカルカラムごとにファインチューニングを行うことで予測精度を向上させる。手順を以下に示す。
 
 \begin{enumerate}
   \item ベースモデルの学習
@@ -235,19 +220,15 @@ LightGBMおよびXGBoostによるハイブリッドモデルを事前学習す�
 \end{figure}
 
 \section{提案手法の位置づけ}
-
-本研究の提案手法は、LightGBMによる基本的なモデル学習を行った後に、
-カテゴリカルカラムごとのファインチューニングを行うことで、
-予測精度を向上させることを目的とするものである。
 本手法が位置付けられる領域は、初期モデル学習後の精度改善手法であり、
 以下に示す既存手法と同じ段階に属する。
 
 \begin{itemize}
   \item クロスバリデーションによる汎化性能の向上
   \item ハイパーパラメータチューニング
-  \item 同系アンサンブル（seedや\texttt{learning\_rate}のわずかな変更）
+  \item 同系アンサンブル（seedやlearning\_rateのわずかな変更）
   \item 異種アンサンブル（LightGBMとXGBoostの組み合わせなど）
-  \item 目的変数の変換（\texttt{log1p}など）
+  \item 目的変数の変換(log1pなど）
   \item 残差モデル（モデルの残差を別モデルで学習する手法）
 \end{itemize}
 
@@ -345,10 +326,7 @@ Ecuador の大手スーパーマーケットチェーンにおける大規模販
 
 本研究では、各データセットに対してLightGBMを用いた3種類の手法でモデルを構築し、
 予測性能を比較する。比較対象には、単一モデルによる学習結果を用いるベースラインと、
-時系列構造を考慮したTime Cross Validationを採用する。また、提案手法における
-ファインチューニングの影響を適切に評価するため、学習には
-Early Stoppingを導入する。
-
+時系列構造を考慮したTime Cross Validationを採用する。
 \begin{enumerate}
   \item \textbf{ベースライン（単一LightGBMモデル）}
 
@@ -412,29 +390,29 @@ Walmart Sales Dataset & 2012-09-01 & 2012-09-30 \\
 \end{tabular}
 \end{table}
 
-\section{LightGBMのパラメーター}
+\section{LightGBMのパラメータ}
 
-本研究で用いるLightGBMのパラメーターは以下である。
+本研究で用いるLightGBMのパラメータは以下である。
 
 \begin{itemize}
-  \item 決定木の最大本数：\texttt{n\_estimators = 5000}
-  \item 木の最大深さ：\texttt{max\_depth = 20}
-  \item 学習率：\texttt{learning\_rate = 0.01}
-  \item 分割の最小利得：\texttt{min\_split\_gain = 0.1}
-  \item 目的関数：\texttt{objective = "regression"}（回帰タスク）
+  \item 決定木の最大本数：5000
+  \item 木の最大深さ：20
+  \item 学習率：0.01
+  \item 分割の最小利得：0.1
+  \item 目的関数：regression
 \end{itemize}
 
 \section{Time Cross Validationにおけるデータの分割方法}
 まず表\ref{val-periods}に示した検証期間を固定し、その期間より前の全データを訓練データ候補とする。すなわち、検証期間は常に時系列の末尾側に配置され、訓練データはその直前までの履歴データのみから構成される。
 
-訓練データ候補に対しては、日付を表す列（\texttt{date}）を用いて昇順にソートしたうえで、Time Cross Validationの各分割を構成する。ここで、全訓練サンプル数を$N$とし、$k$番目の分割（$k=1,\dots,10$）における訓練データサイズ$N_k$を、式\ref{eq:tcv_split}のように定める。
+訓練データ候補に対しては、日付を表す列を用いて昇順にソートしたうえで、Time Cross Validationの各分割を構成する。ここで、全訓練サンプル数を$N$とし、$k$番目の分割（$k=1,\dots,10$）における訓練データサイズ$N_k$を、式\ref{eq:tcv_split}のように定める。
 
 \begin{equation}
   N_k = \left\lceil \frac{k}{10} N \right\rceil
   \label{eq:tcv_split}
 \end{equation}
 
-訓練データのうち先頭から$N_k$件を用いてモデルを学習し、表\ref{val-periods}で定めた検証期間のデータを検証データとして評価する。$k$を1から10まで変化させることで、全訓練期間の$1/10,2/10,\dots,10/10$を順に用いるTime Cross Validationとなる。
+訓練データのうち先頭から$N_k$件を用いてモデルを学習し、表\ref{val-periods}で定めた検証期間のデータを検証データとして評価する。
 
 \section{評価指標}
 各手法で得られたMAEを比較することで、提案手法が
@@ -442,14 +420,14 @@ Walmart Sales Dataset & 2012-09-01 & 2012-09-30 \\
 
 % ================================================================
 
-\chapter{評価と考察}
+\chapter{実験結果と考察}
 \section{実験結果}
 各データセットに対するそれぞれの手法のMAEを示す（表\ref{mae-main}）。
 \begin{table}[H]
 \centering
 \caption{各データセットにおける手法ごとのMAEの比較}
 \label{mae-main}
-\begin{tabular}{llll}
+\begin{tabular}{rrrr}
 \hline
 データセット & ベースライン & 提案手法 & Time Cross Validation\\
 \hline
@@ -460,11 +438,11 @@ Store Sales Time Series Forecasting & 123.9055 & 121.5178 & 157.9872 \\
 \hline
 \end{tabular}
 \end{table}
-全てのデータセットにおいて、提案手法の MAE は、ベースライン、Time Cross Validation の MAE より小さくなっている。
+全てのデータセットにおいて、提案手法の MAE は、ベースライン、Time Cross Validationより小さくなっている。
 
 
 次に、ランダムカラム追加時の実験を行う。
-変更率を式\ref{eq:change_rate}で定義し、表\ref{mae-random-change}に示す。
+変更率を式\ref{eq:change_rate}で定義し、結果を表\ref{mae-random-change}に示す。
 
 \begin{equation}
   \label{eq:change_rate}
@@ -478,7 +456,7 @@ Store Sales Time Series Forecasting & 123.9055 & 121.5178 & 157.9872 \\
 \centering
 \caption{提案手法に対するランダムカラム追加時の MAE と変更率}
 \label{mae-random-change}
-\begin{tabular}{llll}
+\begin{tabular}{rrrr}
 \hline
 データセット & 提案手法 & ランダムなカラム & 変更率（\%） \\
 
@@ -509,7 +487,7 @@ POSデータでは、店舗や商品カテゴリごとに売上の水準や変�
 各カテゴリに固有の水準や変動パターンを反映できる。
 その結果として、特にカテゴリ間の差異が大きい
 Walmart Sales DatasetやStore Sales Time Series Forecastingにおいて、
-ベースラインと比べて顕著なMAEの改善が見られたと解釈できる。
+ベースラインと比べて顕著なMAEの改善が見られた。
 
 また、Time Cross Validationは時系列の順序を保った評価方法であり、
 汎化性能を厳密に測るうえで有用である一方で、
@@ -528,7 +506,7 @@ MAEの変更率は最大で+0.0843\%と0.1\%未満に収まっている。
 データを分割したことによる効果である。
 言い換えると、提案手法は無関係なカテゴリ情報に対して過度に適合せず、
 POSデータに内在する有用な構造を利用した場合にのみ、
-安定して精度向上をもたらす手法である。
+安定して精度向上をもたらす。
 
 以上より、提案手法が精度向上を達成した主な要因は、
 \begin{enumerate}
